@@ -5,7 +5,7 @@ simple discord bot for my friend group discord server that does this:
 ## features
 
 - translate messages when people forget to change their keyboard layout
-- music player ~in progress~
+- music player (in progress)
     - [x] play music
     - [x] leave voice channel after stoping
     - [x] play local audio files
