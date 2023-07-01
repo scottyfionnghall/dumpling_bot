@@ -1,5 +1,7 @@
 import discord
 import os
+import logging
+import asyncio
 from discord.ext import commands
 from discord import FFmpegPCMAudio
 from dotenv import load_dotenv
@@ -7,6 +9,7 @@ from donat_converter import dnt_trnslt
 from playlist import playlist
 from playlist import playlist_get_dir
 
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 load_dotenv()
 token = os.getenv('TOKEN')
 intents = discord.Intents.default()
@@ -20,6 +23,8 @@ async def on_ready():
 @bot.command()
 async def play(ctx):
     global song_queue
+    global current_song
+    current_song = 0
     song_queue = playlist()
     try:
         channel = ctx.author.voice.channel
@@ -28,35 +33,36 @@ async def play(ctx):
             player = await channel.connect()
         except:
             pass
-        player.play(FFmpegPCMAudio(song_queue[0]))
+        player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
         await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir())}')
     except:
-         await ctx.send(f'Connect to voice channel')
-
+        await ctx.send(f'Connect to voice channel')
 @bot.command()
 async def next(ctx):
-    try:
+    if player.is_playing():
         player.stop()
-        song_queue.pop(0)
-        player.play(FFmpegPCMAudio(song_queue[0]))
-        await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir())}')
-    except:
-        await ctx.send(f'Connect to voice channel or start playing music')
+    else:
+        try:
+            song_queue.pop(0)
+            player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
+            await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir())}')
+        except:
+            await ctx.send(f'Connect to voice channel or start playing music')
+        
 @bot.command()
 async def stop(ctx):
-    song_queue = playlist()
     await ctx.send(f'Stopping ...')
     player.stop()
     await player.disconnect()
 
 @bot.command()
 async def pause(ctx):
-    await ctx.send(f'Music paused')
+    await ctx.send(f'Paused ...')
     player.pause()
 
 @bot.command()
 async def resume(ctx):
-    await ctx.send(f'Resuming playing music')
+    await ctx.send(f'Resuming ...')
     player.resume()
 
 @bot.command()
@@ -68,4 +74,4 @@ async def translate(ctx, *args):
     else:
         await ctx.send(f'After the command write text to translate')
 
-bot.run(token)
+bot.run(token, log_handler=handler)
