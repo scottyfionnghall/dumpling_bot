@@ -10,4 +10,5 @@ simple discord bot for my friend group discord server that does this:
     - [x] leave voice channel after stoping
     - [x] play local audio files
     - [x] queue of songs
-    - [x] go through the queue (next/previous song etc.) and pause music
+    - [x] play next song
+    - [ ] play previous song
