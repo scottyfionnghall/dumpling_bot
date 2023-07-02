@@ -23,8 +23,6 @@ async def on_ready():
 @bot.command()
 async def play(ctx):
     global song_queue
-    global current_song
-    current_song = 0
     song_queue = playlist()
     try:
         channel = ctx.author.voice.channel
@@ -34,9 +32,10 @@ async def play(ctx):
         except:
             pass
         player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
-        await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir())}')
+        await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}')
     except:
         await ctx.send(f'Connect to voice channel')
+
 @bot.command()
 async def next(ctx):
     if player.is_playing():
@@ -45,7 +44,7 @@ async def next(ctx):
         try:
             song_queue.pop(0)
             player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
-            await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir())}')
+            await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}')
         except:
             await ctx.send(f'Connect to voice channel or start playing music')
         
