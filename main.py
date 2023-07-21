@@ -29,10 +29,13 @@ async def play(ctx):
         global player
         try:
             player = await channel.connect()
+            options = "-loglevel panic"
+            after = lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop)
+            player.play(FFmpegPCMAudio(source = song_queue[0], options = options),after=after)
+            current_song = {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}
+            await ctx.send(f'Playing: {current_song}')
         except:
-            pass
-        player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
-        await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}')
+            await ctx.send(f'Connect to voice channel')
     except:
         await ctx.send(f'Connect to voice channel')
 
@@ -43,11 +46,13 @@ async def next(ctx):
     else:
         try:
             song_queue.pop(0)
-            player.play(FFmpegPCMAudio(source = song_queue[0], options = "-loglevel panic"),after=lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop))
-            await ctx.send(f'Playing: {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}')
+            options = "-loglevel panic"
+            after = lambda e: asyncio.run_coroutine_threadsafe(next(ctx), bot.loop)
+            player.play(FFmpegPCMAudio(source = song_queue[0], options = options),after=after)
+            current_song = {song_queue[0].strip(playlist_get_dir()).removesuffix(".mp3")}
+            await ctx.send(f'Playing: {current_song}')
         except:
             await ctx.send(f'Connect to voice channel or start playing music')
-        
 @bot.command()
 async def stop(ctx):
     await ctx.send(f'Stopping ...')
@@ -67,7 +72,6 @@ async def resume(ctx):
 @bot.command()
 async def translate(ctx, *args):
     if args:
-
         arguments = ' '.join(args)
         await ctx.send(f'Translation: {dnt_trnslt(arguments)}')
     else:
